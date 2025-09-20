@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# 🚀 GitHub Setup Script for Homelette Preventivi
+
+echo "🍽️ Setting up GitHub repository for Homelette Preventivi..."
+echo ""
+
+echo "📋 Next steps to push to GitHub:"
+echo ""
+echo "1. 🌐 Go to GitHub.com and create a new public repository"
+echo "   - Repository name: homelette-preventivi"
+echo "   - Description: 🍽️ Professional catering quote generator in Italian with mobile-friendly Streamlit interface"
+echo "   - Make it PUBLIC"
+echo "   - DON'T initialize with README (we already have one)"
+echo ""
+echo "2. 📡 After creating the repository, run these commands:"
+echo ""
+echo "   git remote add origin https://github.com/YOUR_USERNAME/homelette-preventivi.git"
+echo "   git branch -M main"
+echo "   git push -u origin main"
+echo ""
+echo "3. ✅ Your repository will be live and ready for deployment!"
+echo ""
+echo "🐳 Quick deployment options after push:"
+echo "- Streamlit Cloud: https://share.streamlit.io"
+echo "- Heroku: heroku create your-app-name"
+echo "- DigitalOcean: App Platform"
+echo "- Docker: docker-compose up -d"
+echo ""
+echo "📖 See DEPLOYMENT.md for detailed instructions"
