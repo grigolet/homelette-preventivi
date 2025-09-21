@@ -1,5 +1,5 @@
-# Use Python 3.11 slim image as base
-FROM python:3.11-slim
+# Use patched Python 3.11 slim Bookworm image to reduce vulnerabilities
+FROM python:3.11.9-slim-bookworm
 
 # Set working directory
 WORKDIR /app
@@ -11,11 +11,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     STREAMLIT_SERVER_PORT=8501 \
     STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (upgrade base packages to address vulnerabilities)
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
 COPY requirements.txt .
