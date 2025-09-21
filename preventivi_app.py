@@ -235,10 +235,6 @@ def create_word_document(quote_data):
     divider_run = divider_para.add_run("━" * 60)
     divider_run.font.color.rgb = RGBColor(0, 71, 171)
     
-    # Spazio dopo la linea
-    doc.add_paragraph()
-    doc.add_paragraph()
-    
     # Intestazione del preventivo
     header = doc.add_paragraph()
     ref_run = header.add_run("Referenza: ")
@@ -254,7 +250,8 @@ def create_word_document(quote_data):
     luogo_para = doc.add_paragraph()
     luogo_label = luogo_para.add_run("Luogo: ")
     luogo_label.font.name = "Segoe UI"
-    luogo_label.font.size = Pt(11)
+    luogo_label.font.size = Pt(12)
+    luogo_label.font.bold = True
     luogo_value = luogo_para.add_run(quote_data.get('luogo', ''))
     luogo_value.font.name = "Georgia"
     luogo_value.font.size = Pt(11)
@@ -262,7 +259,8 @@ def create_word_document(quote_data):
     ora_para = doc.add_paragraph()
     ora_label = ora_para.add_run("Ora e Luogo: ")
     ora_label.font.name = "Segoe UI"
-    ora_label.font.size = Pt(11)
+    ora_label.font.size = Pt(12)
+    ora_label.font.bold = True
     ora_value = ora_para.add_run(quote_data.get('data_ora', ''))
     ora_value.font.name = "Georgia"
     ora_value.font.size = Pt(11)
@@ -270,7 +268,8 @@ def create_word_document(quote_data):
     tipo_para = doc.add_paragraph()
     tipo_label = tipo_para.add_run("Tipologia servizio: ")
     tipo_label.font.name = "Segoe UI"
-    tipo_label.font.size = Pt(11)
+    tipo_label.font.size = Pt(12)
+    tipo_label.font.bold = True
     tipo_value = tipo_para.add_run(quote_data.get('tipologia_servizio', ''))
     tipo_value.font.name = "Georgia"
     tipo_value.font.size = Pt(11)
@@ -326,7 +325,7 @@ def create_word_document(quote_data):
     
     # Valorizzazione dell'offerta
     valorizzazione = doc.add_paragraph()
-    valorizzazione_run = valorizzazione.add_run("Valorizzazione dell'offerta:")
+    valorizzazione_run = valorizzazione.add_run("Valorizzazione dell'offerta")
     valorizzazione_run.font.size = Pt(16)
     valorizzazione_run.font.bold = True
     valorizzazione_run.font.name = "Calibri"  # Sans-serif for headings
@@ -362,12 +361,12 @@ def create_word_document(quote_data):
     info_para1 = doc.add_paragraph()
     info_run1 = info_para1.add_run("A fronte del saldo della prestazione mediante bonifico bancario verrà emessa su richiesta fattura.")
     info_run1.font.name = "Segoe UI"
-    info_run1.font.size = Pt(10)
+    info_run1.font.size = Pt(11)
     
     info_para2 = doc.add_paragraph()
     info_run2 = info_para2.add_run("Resta a nostro carico la preparazione dei tavoli, il riordino del locale e lo smaltimento rifiuti (no vetro)")
     info_run2.font.name = "Segoe UI"
-    info_run2.font.size = Pt(10)
+    info_run2.font.size = Pt(11)
     
     doc.add_paragraph()
     
@@ -377,14 +376,14 @@ def create_word_document(quote_data):
     totale_finale = totale_base + costo_cameriere
     
     totale_para = doc.add_paragraph()
-    totale_run = totale_para.add_run(f"      Totale {numero_persone} convenuti        € {totale_base}")
+    totale_run = totale_para.add_run(f"      Totale {numero_persone} convenuti:        € {totale_base}")
     totale_run.font.size = Pt(12)
     totale_run.font.name = "Segoe UI"
     
     if costo_cameriere > 0:
         doc.add_paragraph()
         cameriere_para = doc.add_paragraph()
-        cameriere_run = cameriere_para.add_run(f"                                                                   Cameriere                       €   {costo_cameriere}")
+        cameriere_run = cameriere_para.add_run(f"      Cameriere                       €   {costo_cameriere}")
         cameriere_run.font.size = Pt(12)
         cameriere_run.font.name = "Segoe UI"
     
@@ -399,22 +398,32 @@ def create_word_document(quote_data):
     totale_prezzo_run.font.size = Pt(16)
     totale_prezzo_run.font.name = "Georgia"
     
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    doc.add_paragraph()
-    
+    # Nota iva
     iva_para = doc.add_paragraph()
     iva_run = iva_para.add_run("(*) Escluso iva 22%")
     iva_run.font.name = "Segoe UI"
     iva_run.font.size = Pt(10)
     
-    doc.add_paragraph()
-    doc.add_paragraph()
+    # Add page break before MENU section
+    doc.add_page_break()
+    
+    # Subtitle in cobalt blue
+    subtitle_para = doc.add_paragraph()
+    subtitle_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    subtitle_run = subtitle_para.add_run("MENU")
+    subtitle_run.font.size = Pt(18)
+    subtitle_run.font.bold = True
+    subtitle_run.font.name = "Calibri"  # Clean sans-serif for subtitle
+    # Imposta colore blu cobalto (RGB: 0, 71, 171)
+    subtitle_run.font.color.rgb = RGBColor(0, 71, 171)
+    
+    # Linea decorativa orizzontale
+    divider_para = doc.add_paragraph()
+    divider_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    divider_run = divider_para.add_run("━" * 60)
+    divider_run.font.color.rgb = RGBColor(0, 71, 171)
+    
+    
     
     # Menu - Grouped by category
     if quote_data.get('menu_items'):

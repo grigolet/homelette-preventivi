@@ -90,5 +90,9 @@
   "COCOTTINE GUACAMOLE": {
     "categoria": "Aperitivo",
     "descrizione": "Avocado, pomodir"
+  },
+  "TEST PIATTO": {
+    "categoria": "Dolci",
+    "descrizione": "Descrizione ingredienti di test"
   }
 }
