@@ -9,6 +9,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 import io
 import os
+import json
 
 # Configurazione della pagina per mobile
 st.set_page_config(
@@ -53,120 +54,131 @@ def initialize_session_state():
     if 'quote_data' not in st.session_state:
         st.session_state.quote_data = {}
 
-def get_predefined_menu_items():
-    """Restituisce gli elementi del menu predefiniti basati sul documento di esempio"""
-    return {
+def load_menu_items():
+    """Carica gli elementi del menu dal file JSON"""
+    menu_file = "/home/grigolet/cernbox/personal/code/homelette-preventivi/menu_items.json"
+    
+    # Menu predefiniti di base
+    default_items = {
         "COCKTAIL DI BENVENUTO": {
             "categoria": "Aperitivo",
-            "descrizione": "Cocktail di benvenuto per gli ospiti",
-            "prezzo_base": 5.0
+            "descrizione": "Cocktail di benvenuto per gli ospiti"
         },
         "TAGLIATA DI FRUTTA FRESCA": {
             "categoria": "Frutta",
-            "descrizione": "Selezione di frutta fresca di stagione",
-            "prezzo_base": 8.0
+            "descrizione": "Selezione di frutta fresca di stagione"
         },
         "MACEDONIA": {
             "categoria": "Frutta",
-            "descrizione": "Macedonia di frutta fresca",
-            "prezzo_base": 6.0
+            "descrizione": "Macedonia di frutta fresca"
         },
         "PROSCIUTTO DI PARMA E MELONE SU PANE AI CEREALI": {
             "categoria": "Antipasti",
-            "descrizione": "Prosciutto di Parma e melone serviti su pane ai cereali",
-            "prezzo_base": 12.0
+            "descrizione": "Prosciutto di Parma e melone serviti su pane ai cereali"
         },
         "PINZIMONIO DI VERDURE CON SALSE MISTE": {
             "categoria": "Antipasti",
-            "descrizione": "Verdure fresche con selezione di salse",
-            "prezzo_base": 8.0
+            "descrizione": "Verdure fresche con selezione di salse"
         },
         "COUPELLE DI BRISE' CON MOUSSE DI BOLOGNA E PISTACCHI": {
             "categoria": "Pasticceria Salata",
-            "descrizione": "Pasta brise' (farina di frumento, glutine, acqua, burro), mortadella, formaggio fresco, pistacchi",
-            "prezzo_base": 10.0
+            "descrizione": "Pasta brise' (farina di frumento, glutine, acqua, burro), mortadella, formaggio fresco, pistacchi"
         },
         "CESTINI DI SFOGLIA CON PATE' DI FAGIOLINI E TONNO AL LIMONE": {
             "categoria": "Pasticceria Salata",
-            "descrizione": "Farina 00, burro, panna, gelatina, fagiolini, tonno, limone, sale, pepe",
-            "prezzo_base": 9.0
+            "descrizione": "Farina 00, burro, panna, gelatina, fagiolini, tonno, limone, sale, pepe"
         },
         "FIORI DI PANE AI CEREALI CON MOUSSE AL PROSCIUTTO E PEPE ROSA": {
             "categoria": "Pasticceria Salata",
-            "descrizione": "Farina di cereali, acqua, lievito, sale, prosciutto cotto, formaggio fresco, sale, pepe",
-            "prezzo_base": 8.0
+            "descrizione": "Farina di cereali, acqua, lievito, sale, prosciutto cotto, formaggio fresco, sale, pepe"
         },
         "FIORI DI PANE ALLA CURCUMA CON PATE' GUSTOSO": {
             "categoria": "Pasticceria Salata",
-            "descrizione": "Farina di frumento, acqua, sale, curcuma, fagioli, speck, aglio, rosmarino",
-            "prezzo_base": 8.0
+            "descrizione": "Farina di frumento, acqua, sale, curcuma, fagioli, speck, aglio, rosmarino"
         },
         "FIORI DI PANE AL BASILICO CON PESTO AI POMODORI SECCHI E MANDORLE": {
             "categoria": "Pasticceria Salata",
-            "descrizione": "Farina di frumento, basilico, acqua, sale, pomodori secchi, parmigiano, mandorle, basilico, capperi, olio d'oliva",
-            "prezzo_base": 9.0
+            "descrizione": "Farina di frumento, basilico, acqua, sale, pomodori secchi, parmigiano, mandorle, basilico, capperi, olio d'oliva"
         },
         "FIORI DI PANE ALLA BARBABIETOLA CON MOUSSE AI 4 FORMAGGI ED ERBE AROMATICHE": {
             "categoria": "Pasticceria Salata",
-            "descrizione": "Farina di frumento, basilico, barbabietola, acqua, sale, zola, taleggio, parmigiano, formaggio fresco, erbe, pepe",
-            "prezzo_base": 10.0
+            "descrizione": "Farina di frumento, basilico, barbabietola, acqua, sale, zola, taleggio, parmigiano, formaggio fresco, erbe, pepe"
         },
         "GIRO FOCACCIA MORBIDA ALLE PATATE": {
             "categoria": "Pane",
-            "descrizione": "Farina 0, fiocchi di patate, lievito birra, miele, olio evo, semola, pomodorini, olive",
-            "prezzo_base": 6.0
+            "descrizione": "Farina 0, fiocchi di patate, lievito birra, miele, olio evo, semola, pomodorini, olive"
         },
         "SGABEI ALLE OLIVE": {
             "categoria": "Pane",
-            "descrizione": "Farina 0, fiocchi di patate, lievito birra, olive, sale",
-            "prezzo_base": 5.0
+            "descrizione": "Farina 0, fiocchi di patate, lievito birra, olive, sale"
         },
         "POMODORINI CROCCANTI": {
             "categoria": "Contorni",
-            "descrizione": "Pomodorini, caramello, semi di sesamo",
-            "prezzo_base": 7.0
+            "descrizione": "Pomodorini, caramello, semi di sesamo"
         },
         "VITELLO TONNATO E CAPPERI": {
             "categoria": "Secondi",
-            "descrizione": "Vitello tonnato con capperi",
-            "prezzo_base": 15.0
+            "descrizione": "Vitello tonnato con capperi"
         },
         "CAPONATA": {
             "categoria": "Contorni",
-            "descrizione": "Caponata siciliana",
-            "prezzo_base": 8.0
+            "descrizione": "Caponata siciliana"
         },
         "INVOLTINI DI ZUCCHINE": {
             "categoria": "Contorni",
-            "descrizione": "Involtini di zucchine ripieni",
-            "prezzo_base": 9.0
+            "descrizione": "Involtini di zucchine ripieni"
         },
         "KEDGEREE AL SALMONE": {
             "categoria": "Primi",
-            "descrizione": "Kedgeree al salmone",
-            "prezzo_base": 14.0
+            "descrizione": "Kedgeree al salmone"
         },
         "INSALATA DI PASTA MEDITERRANEA": {
             "categoria": "Primi",
-            "descrizione": "Insalata di pasta con ingredienti mediterranei",
-            "prezzo_base": 12.0
+            "descrizione": "Insalata di pasta con ingredienti mediterranei"
         },
         "FANTASIA DI TIRAMISU'": {
             "categoria": "Dolci",
-            "descrizione": "Tiramisu' della casa",
-            "prezzo_base": 8.0
+            "descrizione": "Tiramisu' della casa"
         },
         "SPUMONE ALLA FRUTTA": {
             "categoria": "Dolci",
-            "descrizione": "Spumone con frutta fresca",
-            "prezzo_base": 7.0
+            "descrizione": "Spumone con frutta fresca"
         },
         "CREMA CAFFE'": {
             "categoria": "Dolci",
-            "descrizione": "Crema al caffè",
-            "prezzo_base": 6.0
+            "descrizione": "Crema al caffè"
         }
     }
+    
+    try:
+        if os.path.exists(menu_file):
+            with open(menu_file, 'r', encoding='utf-8') as f:
+                loaded_items = json.load(f)
+                # Merge con gli elementi predefiniti, dando priorità a quelli salvati
+                default_items.update(loaded_items)
+        return default_items
+    except Exception as e:
+        st.error(f"Errore nel caricamento del menu: {e}")
+        return default_items
+
+def save_menu_items(items):
+    """Salva gli elementi del menu nel file JSON"""
+    menu_file = "/home/grigolet/cernbox/personal/code/homelette-preventivi/menu_items.json"
+    try:
+        with open(menu_file, 'w', encoding='utf-8') as f:
+            json.dump(items, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        st.error(f"Errore nel salvataggio del menu: {e}")
+
+def add_new_menu_item(nome, categoria, descrizione):
+    """Aggiunge un nuovo elemento al menu persistente"""
+    menu_items = load_menu_items()
+    menu_items[nome.upper()] = {
+        "categoria": categoria,
+        "descrizione": descrizione
+    }
+    save_menu_items(menu_items)
+    return menu_items
 
 def create_word_document(quote_data):
     """Crea un documento Word con il preventivo"""
@@ -537,74 +549,72 @@ def main():
     elif sezione == "🍽️ Menu":
         st.header("🍽️ Selezione Menu")
         
-        predefined_items = get_predefined_menu_items()
-        categories = list(set([item['categoria'] for item in predefined_items.values()]))
+        # Carica elementi del menu dal file JSON
+        all_menu_items = load_menu_items()
+        categories = list(set([item['categoria'] for item in all_menu_items.values()]))
         
         # Filtra per categoria
         categoria_selezionata = st.selectbox("Filtra per categoria:", 
                                            ["Tutte"] + sorted(categories))
         
-        # Mostra elementi predefiniti
-        st.subheader("Elementi Predefiniti")
+        # Mostra elementi disponibili
+        st.subheader("Menu Disponibili")
         
-        items_to_show = predefined_items.items()
+        items_to_show = all_menu_items.items()
         if categoria_selezionata != "Tutte":
-            items_to_show = [(k, v) for k, v in predefined_items.items() 
+            items_to_show = [(k, v) for k, v in all_menu_items.items() 
                            if v['categoria'] == categoria_selezionata]
         
         for nome, dettagli in items_to_show:
-            col1, col2, col3 = st.columns([3, 1, 1])
+            col1, col2 = st.columns([4, 1])
             
             with col1:
                 st.write(f"**{nome}**")
                 st.write(f"*{dettagli['categoria']}* - {dettagli['descrizione']}")
             
             with col2:
-                st.write(f"€ {dettagli['prezzo_base']}")
-            
-            with col3:
                 if st.button("Aggiungi", key=f"add_{nome}"):
                     new_item = {
                         'nome': nome,
                         'categoria': dettagli['categoria'],
-                        'descrizione': dettagli['descrizione'],
-                        'prezzo': dettagli['prezzo_base']
+                        'descrizione': dettagli['descrizione']
                     }
-                    if new_item not in st.session_state.menu_items:
+                    # Controlla se non è già presente nel menu selezionato
+                    if not any(item['nome'] == nome for item in st.session_state.menu_items):
                         st.session_state.menu_items.append(new_item)
                         st.success(f"Aggiunto: {nome}")
+                    else:
+                        st.warning(f"{nome} è già nel menu selezionato")
         
         # Aggiungi elemento personalizzato
-        st.subheader("Aggiungi Elemento Personalizzato")
+        st.subheader("Aggiungi Nuovo Elemento al Database")
         
         with st.form("custom_item_form"):
             col1, col2 = st.columns([2, 1])
             
             with col1:
                 custom_nome = st.text_input("Nome Piatto")
-                custom_categoria = st.text_input("Categoria")
                 custom_descrizione = st.text_area("Descrizione/Ingredienti")
             
             with col2:
-                custom_prezzo = st.number_input("Prezzo €", min_value=0.0, step=0.5)
+                custom_categoria = st.selectbox("Categoria", 
+                                              ["Aperitivo", "Antipasti", "Primi", "Secondi", 
+                                               "Contorni", "Pasticceria Salata", "Pane", 
+                                               "Dolci", "Frutta", "Bevande"])
             
-            if st.form_submit_button("Aggiungi al Menu"):
+            if st.form_submit_button("Aggiungi al Database"):
                 if custom_nome:
-                    custom_item = {
-                        'nome': custom_nome,
-                        'categoria': custom_categoria,
-                        'descrizione': custom_descrizione,
-                        'prezzo': custom_prezzo
-                    }
-                    st.session_state.menu_items.append(custom_item)
-                    st.success(f"Aggiunto elemento personalizzato: {custom_nome}")
+                    # Aggiunge al database persistente
+                    add_new_menu_item(custom_nome, custom_categoria, custom_descrizione)
+                    st.success(f"Aggiunto '{custom_nome}' al database! Sarà disponibile per tutti i preventivi futuri.")
+                    st.rerun()  # Ricarica la pagina per mostrare il nuovo elemento
         
-        # Mostra menu corrente
+        # Mostra menu corrente per questo preventivo
         if st.session_state.menu_items:
-            st.subheader("Menu Selezionato")
+            st.subheader("Menu Selezionato per questo Preventivo")
             
             for i, item in enumerate(st.session_state.menu_items):
-                col1, col2, col3 = st.columns([3, 1, 1])
+                col1, col2 = st.columns([4, 1])
                 
                 with col1:
                     st.write(f"**{item['nome']}**")
@@ -612,9 +622,6 @@ def main():
                         st.write(f"*{item['descrizione']}*")
                 
                 with col2:
-                    st.write(f"€ {item['prezzo']}")
-                
-                with col3:
                     if st.button("Rimuovi", key=f"remove_{i}"):
                         st.session_state.menu_items.pop(i)
                         st.rerun()
@@ -660,6 +667,12 @@ def main():
         
         # Riassunto costi
         st.subheader("Riassunto Costi")
+        
+        # Create a simple summary without individual item prices
+        st.info(f"**Menu selezionato:** {len(st.session_state.menu_items)} elementi")
+        if st.session_state.menu_items:
+            for item in st.session_state.menu_items:
+                st.write(f"• {item['nome']}")
         
         df_costi = pd.DataFrame([
             ["Servizio per persona", f"€ {prezzo_persona}", f"{numero_persone} persone", f"€ {totale_base}"],

@@ -1,0 +1,90 @@
+{
+  "COCKTAIL DI BENVENUTO": {
+    "categoria": "Aperitivo",
+    "descrizione": "Cocktail di benvenuto per gli ospiti"
+  },
+  "TAGLIATA DI FRUTTA FRESCA": {
+    "categoria": "Frutta",
+    "descrizione": "Selezione di frutta fresca di stagione"
+  },
+  "MACEDONIA": {
+    "categoria": "Frutta",
+    "descrizione": "Macedonia di frutta fresca"
+  },
+  "PROSCIUTTO DI PARMA E MELONE SU PANE AI CEREALI": {
+    "categoria": "Antipasti",
+    "descrizione": "Prosciutto di Parma e melone serviti su pane ai cereali"
+  },
+  "PINZIMONIO DI VERDURE CON SALSE MISTE": {
+    "categoria": "Antipasti",
+    "descrizione": "Verdure fresche con selezione di salse"
+  },
+  "COUPELLE DI BRISE' CON MOUSSE DI BOLOGNA E PISTACCHI": {
+    "categoria": "Pasticceria Salata",
+    "descrizione": "Pasta brise' (farina di frumento, glutine, acqua, burro), mortadella, formaggio fresco, pistacchi"
+  },
+  "CESTINI DI SFOGLIA CON PATE' DI FAGIOLINI E TONNO AL LIMONE": {
+    "categoria": "Pasticceria Salata",
+    "descrizione": "Farina 00, burro, panna, gelatina, fagiolini, tonno, limone, sale, pepe"
+  },
+  "FIORI DI PANE AI CEREALI CON MOUSSE AL PROSCIUTTO E PEPE ROSA": {
+    "categoria": "Pasticceria Salata",
+    "descrizione": "Farina di cereali, acqua, lievito, sale, prosciutto cotto, formaggio fresco, sale, pepe"
+  },
+  "FIORI DI PANE ALLA CURCUMA CON PATE' GUSTOSO": {
+    "categoria": "Pasticceria Salata",
+    "descrizione": "Farina di frumento, acqua, sale, curcuma, fagioli, speck, aglio, rosmarino"
+  },
+  "FIORI DI PANE AL BASILICO CON PESTO AI POMODORI SECCHI E MANDORLE": {
+    "categoria": "Pasticceria Salata",
+    "descrizione": "Farina di frumento, basilico, acqua, sale, pomodori secchi, parmigiano, mandorle, basilico, capperi, olio d'oliva"
+  },
+  "FIORI DI PANE ALLA BARBABIETOLA CON MOUSSE AI 4 FORMAGGI ED ERBE AROMATICHE": {
+    "categoria": "Pasticceria Salata",
+    "descrizione": "Farina di frumento, basilico, barbabietola, acqua, sale, zola, taleggio, parmigiano, formaggio fresco, erbe, pepe"
+  },
+  "GIRO FOCACCIA MORBIDA ALLE PATATE": {
+    "categoria": "Pane",
+    "descrizione": "Farina 0, fiocchi di patate, lievito birra, miele, olio evo, semola, pomodorini, olive"
+  },
+  "SGABEI ALLE OLIVE": {
+    "categoria": "Pane",
+    "descrizione": "Farina 0, fiocchi di patate, lievito birra, olive, sale"
+  },
+  "POMODORINI CROCCANTI": {
+    "categoria": "Contorni",
+    "descrizione": "Pomodorini, caramello, semi di sesamo"
+  },
+  "VITELLO TONNATO E CAPPERI": {
+    "categoria": "Secondi",
+    "descrizione": "Vitello tonnato con capperi"
+  },
+  "CAPONATA": {
+    "categoria": "Contorni",
+    "descrizione": "Caponata siciliana"
+  },
+  "INVOLTINI DI ZUCCHINE": {
+    "categoria": "Contorni",
+    "descrizione": "Involtini di zucchine ripieni"
+  },
+  "KEDGEREE AL SALMONE": {
+    "categoria": "Primi",
+    "descrizione": "Kedgeree al salmone"
+  },
+  "INSALATA DI PASTA MEDITERRANEA": {
+    "categoria": "Primi",
+    "descrizione": "Insalata di pasta con ingredienti mediterranei"
+  },
+  "FANTASIA DI TIRAMISU'": {
+    "categoria": "Dolci",
+    "descrizione": "Tiramisu' della casa"
+  },
+  "SPUMONE ALLA FRUTTA": {
+    "categoria": "Dolci",
+    "descrizione": "Spumone con frutta fresca"
+  },
+  "CREMA CAFFE'": {
+    "categoria": "Dolci",
+    "descrizione": "Crema al caffè"
+  }
+}

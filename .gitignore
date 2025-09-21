@@ -100,3 +100,6 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# App-specific: Persistent menu data (keep this file)
+# menu_items.json
