@@ -416,19 +416,50 @@ def create_word_document(quote_data):
     doc.add_paragraph()
     doc.add_paragraph()
     
-    # Menu
-    for item in quote_data.get('menu_items', []):
-        item_para = doc.add_paragraph()
-        item_run = item_para.add_run(item['nome'].upper())
-        item_run.bold = True
-        item_run.font.size = Pt(12)
-        item_run.font.name = "Calibri"  # Sans-serif for menu headings
-        if item.get('descrizione'):
-            desc_para = doc.add_paragraph(item['descrizione'])
-            desc_para.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            for run in desc_para.runs:
-                run.font.name = "Segoe UI"
-                run.font.size = Pt(10)
+    # Menu - Grouped by category
+    if quote_data.get('menu_items'):
+        # Group items by category
+        menu_by_category = {}
+        for item in quote_data.get('menu_items', []):
+            categoria = item.get('categoria', 'Altro')
+            if categoria not in menu_by_category:
+                menu_by_category[categoria] = []
+            menu_by_category[categoria].append(item)
+        
+        # Define category order for better presentation
+        category_order = [
+            'Aperitivo', 'Antipasti', 'Primi', 'Secondi', 
+            'Contorni', 'Pasticceria Salata', 'Pane', 
+            'Dolci', 'Frutta', 'Bevande', 'Altro'
+        ]
+        
+        # Display menu items grouped by category
+        for categoria in category_order:
+            if categoria in menu_by_category and menu_by_category[categoria]:
+                # Category header
+                category_para = doc.add_paragraph()
+                category_run = category_para.add_run(categoria.upper())
+                category_run.bold = True
+                category_run.font.size = Pt(14)
+                category_run.font.name = "Calibri"
+                category_run.font.color.rgb = RGBColor(0, 71, 171)  # Cobalt blue
+                
+                # Items in this category
+                for item in menu_by_category[categoria]:
+                    item_para = doc.add_paragraph()
+                    item_run = item_para.add_run(item['nome'].upper())
+                    item_run.bold = True
+                    item_run.font.size = Pt(12)
+                    item_run.font.name = "Calibri"  # Sans-serif for menu headings
+                    if item.get('descrizione'):
+                        desc_para = doc.add_paragraph(item['descrizione'])
+                        desc_para.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                        for run in desc_para.runs:
+                            run.font.name = "Segoe UI"
+                            run.font.size = Pt(10)
+                
+                # Add space between categories
+                doc.add_paragraph()
     
     # Note aggiuntive
     if quote_data.get('note'):
@@ -703,17 +734,37 @@ def main():
         
         st.markdown("---")
         
-        st.markdown(f"**Gent.mo {quote_data.get('destinatario', '')},**")
+        st.markdown(f"**Gentile {quote_data.get('destinatario', '')},**")
         st.markdown(f"come da accordi Vi proponiamo la nostra migliore offerta per l'evento di cui in oggetto per numero {quote_data.get('numero_persone', '')} persone.")
         
         # Menu
         if st.session_state.menu_items:
             st.subheader("Menu Selezionato")
+            
+            # Group items by category for display
+            menu_by_category = {}
             for item in st.session_state.menu_items:
-                st.markdown(f"**{item['nome'].upper()}**")
-                if item.get('descrizione'):
-                    st.markdown(f"*{item['descrizione']}*")
-                st.markdown("")
+                categoria = item.get('categoria', 'Altro')
+                if categoria not in menu_by_category:
+                    menu_by_category[categoria] = []
+                menu_by_category[categoria].append(item)
+            
+            # Define category order
+            category_order = [
+                'Aperitivo', 'Antipasti', 'Primi', 'Secondi', 
+                'Contorni', 'Pasticceria Salata', 'Pane', 
+                'Dolci', 'Frutta', 'Bevande', 'Altro'
+            ]
+            
+            # Display grouped menu
+            for categoria in category_order:
+                if categoria in menu_by_category and menu_by_category[categoria]:
+                    st.markdown(f"### **{categoria}**")
+                    for item in menu_by_category[categoria]:
+                        st.markdown(f"**{item['nome'].upper()}**")
+                        if item.get('descrizione'):
+                            st.markdown(f"*{item['descrizione']}*")
+                        st.markdown("")
         
         # Totali
         numero_persone = quote_data.get('numero_persone', 0)
