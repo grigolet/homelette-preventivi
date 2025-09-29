@@ -14,13 +14,12 @@ import json
 # Import draft management modules
 try:
     from database import db
-    from autosave import auto_save, trigger_auto_save, create_auto_save_input
     DRAFTS_ENABLED = True
 except ImportError as e:
     st.warning(f"Draft functionality not available: {e}")
     DRAFTS_ENABLED = False
 
-# Configurazione della pagina per mobile
+# Configurazione pagina
 st.set_page_config(
     page_title="Generatore Preventivi Catering",
     page_icon="🍽️",
@@ -62,13 +61,9 @@ def initialize_session_state():
         st.session_state.menu_items = []
     if 'quote_data' not in st.session_state:
         st.session_state.quote_data = {}
-    # Initialize other session state variables for draft management
+    # Initialize session state variables for draft management
     if 'current_draft_id' not in st.session_state:
         st.session_state.current_draft_id = None
-    if 'auto_save_status' not in st.session_state:
-        st.session_state.auto_save_status = "💾 Pronto"
-    if 'last_save_time' not in st.session_state:
-        st.session_state.last_save_time = None
 
 def load_menu_items():
     """Carica gli elementi del menu dal file JSON"""
@@ -195,6 +190,65 @@ def add_new_menu_item(nome, categoria, descrizione):
     }
     save_menu_items(menu_items)
     return menu_items
+
+def manual_save_draft(draft_name=None):
+    """Manually save current session data as a draft"""
+    try:
+        # Compile all current session data
+        complete_data = {
+            'event_data': st.session_state.get('quote_data', {}),
+            'menu_items': st.session_state.get('menu_items', []),
+            'prezzo_persona': st.session_state.quote_data.get('prezzo_persona', 0),
+            'costo_cameriere': st.session_state.quote_data.get('costo_cameriere', 0),
+            'numero_persone': st.session_state.quote_data.get('numero_persone', 0)
+        }
+        
+        # Save to database
+        draft_id = db.save_draft(complete_data, st.session_state.current_draft_id, draft_name)
+        st.session_state.current_draft_id = draft_id
+        
+        st.success("✅ Preventivo salvato con successo!")
+        return draft_id
+        
+    except Exception as e:
+        st.error(f"❌ Errore nel salvataggio: {e}")
+        return None
+
+def manual_load_draft(draft_id):
+    """Manually load a draft into current session"""
+    try:
+        draft_data = db.load_draft(draft_id)
+        if not draft_data:
+            st.error("❌ Bozza non trovata")
+            return False
+        
+        # Load data into session state
+        st.session_state.quote_data = draft_data.get('event_data', {})
+        st.session_state.menu_items = draft_data.get('menu_items', [])
+        st.session_state.current_draft_id = draft_id
+        
+        # Update quote data with pricing info
+        if 'prezzo_persona' in draft_data:
+            st.session_state.quote_data['prezzo_persona'] = draft_data['prezzo_persona']
+        if 'costo_cameriere' in draft_data:
+            st.session_state.quote_data['costo_cameriere'] = draft_data['costo_cameriere']
+        if 'numero_persone' in draft_data:
+            st.session_state.quote_data['numero_persone'] = draft_data['numero_persone']
+        
+        st.success("✅ Bozza caricata con successo!")
+        return True
+        
+    except Exception as e:
+        st.error(f"❌ Errore nel caricamento: {e}")
+        return False
+
+def create_new_draft():
+    """Create a new empty draft session"""
+    # Clear current session
+    st.session_state.quote_data = {}
+    st.session_state.menu_items = []
+    st.session_state.current_draft_id = None
+    st.success("✨ Nuovo preventivo creato!")
 
 def create_word_document(quote_data):
     """Crea un documento Word con il preventivo"""
@@ -513,11 +567,9 @@ def main():
     with st.sidebar:
         st.markdown("### Menu di Navigazione")
         
-        # Show auto-save status if drafts enabled
-        if DRAFTS_ENABLED:
-            st.markdown(f"**Stato:** {auto_save.get_save_status_display()}")
-            if st.session_state.get('current_draft_id'):
-                st.markdown(f"**Bozza:** {st.session_state.current_draft_id[:8]}...")
+        # Show current draft status if drafts enabled
+        if DRAFTS_ENABLED and st.session_state.get('current_draft_id'):
+            st.markdown(f"**Bozza corrente:** {st.session_state.current_draft_id[:8]}...")
         
         sections = ["📋 Preventivi Salvati", "📋 Dati Evento", "🍽️ Menu", "💰 Prezzi", "📄 Anteprima"]
         if not DRAFTS_ENABLED:
@@ -533,8 +585,7 @@ def main():
         
         with col1:
             if st.button("✨ Nuovo Preventivo", type="primary"):
-                auto_save.create_new_draft()
-                st.success("Nuovo preventivo creato!")
+                create_new_draft()
                 st.rerun()
         
         with col2:
@@ -542,13 +593,11 @@ def main():
                 st.rerun()
         
         with col3:
-            if st.button("💾 Salva Manuale"):
+            if st.button("💾 Salva Preventivo"):
                 if st.session_state.get('quote_data') or st.session_state.get('menu_items'):
-                    try:
-                        draft_id = auto_save.force_save()
-                        st.success(f"Salvato: {draft_id[:8]}...")
-                    except Exception as e:
-                        st.error(f"Errore: {e}")
+                    draft_id = manual_save_draft()
+                    if draft_id:
+                        st.rerun()
                 else:
                     st.warning("Nessun dato da salvare")
         
@@ -616,11 +665,8 @@ def main():
                     
                     with col2:
                         if st.button("📂 Carica", key=f"load_{draft['id']}"):
-                            if auto_save.load_draft(draft['id']):
-                                st.success("Preventivo caricato!")
+                            if manual_load_draft(draft['id']):
                                 st.rerun()
-                            else:
-                                st.error("Errore nel caricamento")
                     
                     with col3:
                         if st.button("📋 Duplica", key=f"duplicate_{draft['id']}"):
@@ -684,53 +730,41 @@ def main():
     elif sezione == "📋 Dati Evento":
         st.header("📋 Informazioni Evento")
         
-        # Auto-save function for this section
-        def on_data_change():
-            if DRAFTS_ENABLED:
-                trigger_auto_save("dati_evento")
-        
         col1, col2 = st.columns([1, 1])
         
         with col1:
             riferimento = st.text_input("Riferimento Cliente", 
                                       value=st.session_state.quote_data.get('riferimento', ''),
                                       placeholder="es. Barberi Mauro",
-                                      on_change=on_data_change,
                                       key="riferimento_input")
             
             destinatario = st.text_input("Destinatario", 
                                        value=st.session_state.quote_data.get('destinatario', ''),
                                        placeholder="es. Mauro",
-                                       on_change=on_data_change,
                                        key="destinatario_input")
             
             luogo = st.text_input("Luogo Evento", 
                                 value=st.session_state.quote_data.get('luogo', ''),
                                 placeholder="es. Villa Rondinella",
-                                on_change=on_data_change,
                                 key="luogo_input")
         
         with col2:
             data_evento = st.date_input("Data Evento", 
                                       value=st.session_state.quote_data.get('data_evento', date.today()),
-                                      on_change=on_data_change,
                                       key="data_evento_input")
             
             ora_evento = st.time_input("Ora Evento", 
                                      value=st.session_state.quote_data.get('ora_evento', datetime.now().time()),
-                                     on_change=on_data_change,
                                      key="ora_evento_input")
             
             numero_persone = st.number_input("Numero Persone", 
                                            min_value=1, 
                                            value=max(1, st.session_state.quote_data.get('numero_persone', 50)),
-                                           on_change=on_data_change,
                                            key="numero_persone_input")
         
         tipologia_servizio = st.text_input("Tipologia Servizio", 
                                          value=st.session_state.quote_data.get('tipologia_servizio', ''),
                                          placeholder="es. COCKTAIL di benvenuto e apericena",
-                                         on_change=on_data_change,
                                          key="tipologia_servizio_input")
         
         # Dettagli servizio
@@ -742,19 +776,16 @@ def main():
             tipologia_buffet = st.selectbox("Tipologia Buffet", 
                                           ["Buffet e servizio", "Solo buffet", "Servizio al tavolo"],
                                           index=0,
-                                          on_change=on_data_change,
                                           key="tipologia_buffet_input")
             
             bicchieri = st.selectbox("Bicchieri", 
                                    ["Calici da vino in materiali ecocompatibili usa e getta", 
                                     "Bicchieri di vetro", 
                                     "Bicchieri di plastica riutilizzabili"],
-                                   on_change=on_data_change,
                                    key="bicchieri_input")
             
             posate = st.selectbox("Posate", 
                                 ["Acciaio leggero", "Acciaio inox", "Posate compostabili"],
-                                on_change=on_data_change,
                                 key="posate_input")
         
         with col4:
@@ -762,22 +793,18 @@ def main():
                                    ["Ceramica e materiali ecocompatibili usa e getta", 
                                     "Ceramica tradizionale", 
                                     "Piatti compostabili"],
-                                   on_change=on_data_change,
                                    key="stoviglie_input")
             
             acqua = st.selectbox("Acqua", 
                                ["Esclusa / da definire", "Inclusa", "Su richiesta"],
-                               on_change=on_data_change,
                                key="acqua_input")
             
             vini = st.selectbox("Vini", 
                               ["Esclusi / da definire", "Inclusi", "Su richiesta"],
-                              on_change=on_data_change,
                               key="vini_input")
         
         servizio = st.selectbox("Servizio", 
                               ["Incluso", "Escluso", "Parzialmente incluso"],
-                              on_change=on_data_change,
                               key="servizio_input")
         
         # Salva i dati
@@ -882,11 +909,6 @@ def main():
     elif sezione == "💰 Prezzi":
         st.header("💰 Calcolo Prezzi")
         
-        # Auto-save function for this section
-        def on_price_change():
-            if DRAFTS_ENABLED:
-                trigger_auto_save("prezzi")
-        
         col1, col2 = st.columns([1, 1])
         
         with col1:
@@ -894,14 +916,14 @@ def main():
                                            min_value=0.0, 
                                            value=float(st.session_state.quote_data.get('prezzo_persona', 28.0)),
                                            step=0.5,
-                                           on_change=on_price_change,
+
                                            key="prezzo_persona_input")
             
             costo_cameriere = st.number_input("Costo Cameriere €", 
                                             min_value=0.0, 
                                             value=float(st.session_state.quote_data.get('costo_cameriere', 200.0)),
                                             step=10.0,
-                                            on_change=on_price_change,
+
                                             key="costo_cameriere_input")
         
         with col2:
@@ -918,7 +940,7 @@ def main():
         note = st.text_area("Note Aggiuntive", 
                           value=st.session_state.quote_data.get('note', ''),
                           placeholder="Eventuali note aggiuntive per il cliente...",
-                          on_change=on_price_change,
+
                           key="note_input")
         
         # Salva i dati
