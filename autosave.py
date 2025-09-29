@@ -111,6 +111,12 @@ class AutoSaveManager:
     
     def _compile_session_data(self, additional_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Compile all session data into a complete draft"""
+        # Initialize session state if not exists
+        if 'quote_data' not in st.session_state:
+            st.session_state.quote_data = {}
+        if 'menu_items' not in st.session_state:
+            st.session_state.menu_items = []
+        
         complete_data = {
             'event_data': st.session_state.get('quote_data', {}),
             'menu_items': st.session_state.get('menu_items', []),

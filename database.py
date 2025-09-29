@@ -261,6 +261,48 @@ class DraftDatabase:
             logger.error(f"Failed to update draft name {draft_id}: {e}")
             return False
     
+    def mark_draft_completed(self, draft_id: str) -> bool:
+        """Mark a draft as completed"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("""
+                    UPDATE drafts 
+                    SET status = 'completed', updated_at = ? 
+                    WHERE id = ?
+                """, (datetime.now().isoformat(), draft_id))
+                conn.commit()
+                
+                success = cursor.rowcount > 0
+                if success:
+                    logger.info(f"Draft {draft_id} marked as completed")
+                
+                return success
+                
+        except Exception as e:
+            logger.error(f"Failed to mark draft as completed {draft_id}: {e}")
+            return False
+    
+    def mark_draft_as_draft(self, draft_id: str) -> bool:
+        """Mark a completed preventivo back to draft status"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("""
+                    UPDATE drafts 
+                    SET status = 'draft', updated_at = ? 
+                    WHERE id = ?
+                """, (datetime.now().isoformat(), draft_id))
+                conn.commit()
+                
+                success = cursor.rowcount > 0
+                if success:
+                    logger.info(f"Draft {draft_id} marked as draft")
+                
+                return success
+                
+        except Exception as e:
+            logger.error(f"Failed to mark draft as draft {draft_id}: {e}")
+            return False
+    
     def process_offline_queue(self):
         """Process queued operations from offline mode"""
         if not self.offline_queue:

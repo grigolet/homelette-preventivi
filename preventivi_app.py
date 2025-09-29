@@ -62,6 +62,13 @@ def initialize_session_state():
         st.session_state.menu_items = []
     if 'quote_data' not in st.session_state:
         st.session_state.quote_data = {}
+    # Initialize other session state variables for draft management
+    if 'current_draft_id' not in st.session_state:
+        st.session_state.current_draft_id = None
+    if 'auto_save_status' not in st.session_state:
+        st.session_state.auto_save_status = "💾 Pronto"
+    if 'last_save_time' not in st.session_state:
+        st.session_state.last_save_time = None
 
 def load_menu_items():
     """Carica gli elementi del menu dal file JSON"""
@@ -580,7 +587,7 @@ def main():
             # Display drafts
             for draft in filtered_drafts:
                 with st.container():
-                    col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+                    col1, col2, col3, col4, col5 = st.columns([3, 1, 1, 1, 1])
                     
                     with col1:
                         # Draft info
@@ -625,6 +632,23 @@ def main():
                                 st.error("Errore nella duplicazione")
                     
                     with col4:
+                        # Toggle status button
+                        if draft['status'] == 'draft':
+                            if st.button("✅ Completa", key=f"complete_{draft['id']}", type="primary"):
+                                if db.mark_draft_completed(draft['id']):
+                                    st.success("Preventivo completato!")
+                                    st.rerun()
+                                else:
+                                    st.error("Errore nell'aggiornamento")
+                        else:
+                            if st.button("🔄 A bozza", key=f"to_draft_{draft['id']}"):
+                                if db.mark_draft_as_draft(draft['id']):
+                                    st.success("Riportato a bozza!")
+                                    st.rerun()
+                                else:
+                                    st.error("Errore nell'aggiornamento")
+                    
+                    with col5:
                         if st.button("🗑️ Elimina", key=f"delete_{draft['id']}", type="secondary"):
                             if st.session_state.get(f'confirm_delete_{draft["id"]}'):
                                 if db.delete_draft(draft['id']):
@@ -699,7 +723,7 @@ def main():
             
             numero_persone = st.number_input("Numero Persone", 
                                            min_value=1, 
-                                           value=st.session_state.quote_data.get('numero_persone', 50),
+                                           value=max(1, st.session_state.quote_data.get('numero_persone', 50)),
                                            on_change=on_data_change,
                                            key="numero_persone_input")
         
@@ -868,14 +892,14 @@ def main():
         with col1:
             prezzo_persona = st.number_input("Prezzo per persona €", 
                                            min_value=0.0, 
-                                           value=st.session_state.quote_data.get('prezzo_persona', 28.0),
+                                           value=float(st.session_state.quote_data.get('prezzo_persona', 28.0)),
                                            step=0.5,
                                            on_change=on_price_change,
                                            key="prezzo_persona_input")
             
             costo_cameriere = st.number_input("Costo Cameriere €", 
                                             min_value=0.0, 
-                                            value=st.session_state.quote_data.get('costo_cameriere', 200.0),
+                                            value=float(st.session_state.quote_data.get('costo_cameriere', 200.0)),
                                             step=10.0,
                                             on_change=on_price_change,
                                             key="costo_cameriere_input")
@@ -1026,6 +1050,30 @@ def main():
                 st.session_state.menu_items = []
                 st.success("Dati resettati. Puoi iniziare un nuovo preventivo.")
                 st.rerun()
+        
+        # Mark as completed option
+        if DRAFTS_ENABLED and st.session_state.get('current_draft_id'):
+            st.markdown("---")
+            st.subheader("🏁 Finalizza Preventivo")
+            
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                if st.button("✅ Segna come Completato", type="primary"):
+                    if db.mark_draft_completed(st.session_state.current_draft_id):
+                        st.success("Preventivo segnato come completato!")
+                        st.balloons()
+                        # Optional: clear current draft
+                        st.session_state.current_draft_id = None
+                        st.rerun()
+                    else:
+                        st.error("Errore nel segnare come completato")
+            
+            with col2:
+                st.info("💡 **Suggerimento:** Segna il preventivo come completato dopo aver scaricato il documento Word!")
+        
+        elif DRAFTS_ENABLED:
+            st.info("💾 **Suggerimento:** I tuoi dati vengono salvati automaticamente. Vai alla sezione 'Preventivi Salvati' per gestire le tue bozze.")
 
 if __name__ == "__main__":
     main()

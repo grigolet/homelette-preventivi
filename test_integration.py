@@ -190,6 +190,62 @@ def test_error_handling():
         print(f"✅ Expected error handled correctly: {type(e).__name__}")
 
 
+def test_mark_draft_completed():
+    """Test marking draft as completed"""
+    print("\n🏁 Testing Mark Draft as Completed...")
+    
+    test_db_fd, test_db_path = tempfile.mkstemp(suffix='.db')
+    
+    try:
+        db = DraftDatabase(test_db_path)
+        
+        # Create test draft
+        sample_data = {
+            'event_data': {'riferimento': 'Completion Test'},
+            'prezzo_persona': 35.0
+        }
+        draft_id = db.save_draft(sample_data, name="Test Completion")
+        print(f"✅ Created test draft: {draft_id[:8]}...")
+        
+        # Verify initial status
+        metadata = db.get_draft_metadata(draft_id)
+        assert metadata['status'] == 'draft'
+        print("✅ Initial status is 'draft'")
+        
+        # Mark as completed
+        success = db.mark_draft_completed(draft_id)
+        assert success
+        print("✅ Successfully marked as completed")
+        
+        # Verify status changed
+        metadata = db.get_draft_metadata(draft_id)
+        assert metadata['status'] == 'completed'
+        print("✅ Status changed to 'completed'")
+        
+        # Mark back as draft
+        success = db.mark_draft_as_draft(draft_id)
+        assert success
+        print("✅ Successfully marked back as draft")
+        
+        # Verify status changed back
+        metadata = db.get_draft_metadata(draft_id)
+        assert metadata['status'] == 'draft'
+        print("✅ Status changed back to 'draft'")
+        
+        # Cleanup
+        db.delete_draft(draft_id)
+        print("✅ Cleanup completed")
+        
+        print("🎉 Mark draft as completed tests passed!")
+        
+    except Exception as e:
+        print(f"❌ Mark completion test failed: {e}")
+        raise
+    finally:
+        os.close(test_db_fd)
+        os.unlink(test_db_path)
+
+
 def test_performance():
     """Test basic performance characteristics"""
     print("\n⚡ Testing Performance...")
@@ -246,6 +302,7 @@ def main():
         test_autosave_basic()
         test_data_persistence()
         test_error_handling()
+        test_mark_draft_completed()
         test_performance()
         
         print("\n🎉 All tests passed successfully!")
