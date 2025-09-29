@@ -13,6 +13,8 @@ services:
     volumes:
       # Mount volume for generated documents (optional)
       - ./output:/app/output
+      # Mount volume for database persistence
+      - ./data:/app/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
@@ -23,3 +25,4 @@ services:
 
 volumes:
   output:
+  data:
