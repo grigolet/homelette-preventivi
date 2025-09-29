@@ -1,4 +1,15 @@
-# 🍽️ App Preventivi Catering
+# 🍽️ Ap## 📋 Caratteristiche
+
+- **Interface mobile-friendly**: Ottimizzata per l'uso da smartphone
+- **💾 Sistema di Bozze**: Salva e riprendi preventivi in qualsiasi momento
+- **🔄 Auto-Save**: Salvataggio automatico durante la compilazione
+- **📴 Modalità Offline**: Funziona anche senza connessione internet
+- **Menu predefiniti**: Basati sui tuoi documenti di esempio esistenti
+- **Elementi personalizzabili**: Aggiungi nuovi piatti e personalizza prezzi
+- **Export Word**: Genera documenti .docx nel formato del tuo template con logo aziendale
+- **Calcolo automatico**: Calcola automaticamente totali e costi
+- **Navigazione semplice**: Interface organizzata in sezioni chiare
+- **🐳 Docker Ready**: Pronto per deployment con Docker/Docker Composeivi Catering
 
 Un'applicazione Streamlit in italiano per generare preventivi professionali per eventi di catering.
 
@@ -40,6 +51,12 @@ streamlit run preventivi_app.py
 ```
 
 ## 📱 Utilizzo
+
+### 0. 📋 Preventivi Salvati *(Nuovo!)*
+- **Salva e Riprendi**: I preventivi si salvano automaticamente durante la compilazione
+- **Gestisci Bozze**: Visualizza, carica, duplica o elimina preventivi salvati
+- **Lavoro Offline**: Continua a lavorare anche senza connessione internet
+- **Template**: Duplica preventivi esistenti come modelli per nuovi eventi
 
 ### 1. 📋 Dati Evento
 - Inserisci riferimento cliente e destinatario
